@@ -1,0 +1,31 @@
+[project]
+name = "aa-case-02-oil-price-prediction"
+version = "0.1.0"
+description = "Predicción del precio del petróleo Brent con RNN, LSTM y GRU (Caso II de Aprendizaje Automático, UAX)."
+authors = [
+    {name = "Álvaro González Fernández"}
+]
+readme = "README.md"
+# La plantilla pedía >=3.12; se amplía a 3.11 porque el proyecto se desarrolló con Python 3.11.
+requires-python = ">=3.11,<3.15"
+dependencies = [
+    "pandas (>=3.1.0,<4.0.0)",
+    "yfinance (>=1.8.0,<2.0.0)",
+    "numpy (>=2.4.0,<3.0.0)",
+    "requests (>=2.34.0,<3.0.0)",
+    "statsmodels (>=0.15.0,<0.16.0)",
+    "scipy (>=1.17.0,<2.0.0)",
+    "scikit-learn (>=1.9.0,<2.0.0)",
+    "matplotlib (>=3.11.0,<4.0.0)",
+    "pyyaml (>=6.0.0,<7.0.0)",
+    "torch (>=2.15.0,<3.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+package-mode = false

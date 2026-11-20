@@ -1,0 +1,14 @@
+# Vía alternativa a Poetry (la que usan GitHub Actions).
+# Rueda de PyTorch solo CPU (evita descargar CUDA en Linux)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+pandas==3.1.1
+numpy==2.4.6
+requests==2.34.2
+yfinance==1.8.0
+statsmodels==0.15.0
+scipy==1.17.1
+scikit-learn==1.9.1
+matplotlib==3.11.2
+torch==2.15.0+cpu
+pyyaml==6.0.3

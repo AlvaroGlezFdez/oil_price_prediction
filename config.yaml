@@ -1,0 +1,125 @@
+# =============================================================
+#  Configuración del Caso II: predicción del Brent con RNN/LSTM/GRU
+#  Todos los parámetros del proyecto se centralizan aquí.
+# =============================================================
+
+semilla: 42
+
+# ---------------------------------------------------------------
+# Rutas (relativas a la raíz del repositorio)
+# ---------------------------------------------------------------
+rutas:
+  raw: data/raw
+  processed: data/processed
+  eda: reports/eda
+  results: results
+  models: models
+
+# ---------------------------------------------------------------
+# Descarga de datos
+# ---------------------------------------------------------------
+datos:
+  inicio: "2000-01-01"
+  fin: null                 # null = hoy
+  timeout_s: 60             # tiempo máximo por petición HTTP
+  reintentos: 3
+
+  # FRED (sin clave). id de la serie -> nombre de columna
+  series_fred:
+    DCOILBRENTEU: brent     # EIA, Brent spot -> VARIABLE OBJETIVO (define el calendario)
+    DCOILWTICO: wti         # EIA, WTI spot
+    ECBDFR: tipo_bce        # BCE, facilidad de depósito
+    DEXUSEU: usd_por_eur    # dólares por euro
+    DEXCHUS: cny_por_usd    # yuanes por dólar
+    VIXCLS: vix             # volatilidad implícita S&P 500 (Cboe)
+
+  # Yahoo Finance: futuros con OHLCV completo (ticker -> prefijo)
+  yahoo_ohlcv:
+    BZ=F: brent_fut         # Brent (solo desde ~2007)
+    CL=F: wti_fut           # WTI
+
+  # Yahoo Finance: solo cierre (ticker -> nombre de columna)
+  # gas_natural: futuro Henry Hub NG=F en todo el periodo. Sustituye a FRED DHHNGSP,
+  # que entre 2000 y 2006 solo tiene ~60 observaciones al año.
+  yahoo_cierres:
+    NG=F: gas_natural
+    HG=F: cobre
+    GC=F: oro
+    DX-Y.NYB: indice_dolar
+
+  # Columnas de precio del WTI en las que un valor <= 0 se marca como faltante
+  # (20-04-2020: WTI spot y futuro cerraron en negativo)
+  columnas_wti: [wti, wti_fut_Open, wti_fut_High, wti_fut_Low, wti_fut_Close]
+
+  # Relleno hacia delante al calendario del Brent. null = sin límite de días
+  ffill_limite: null
+
+# ---------------------------------------------------------------
+# Variables de entrada y objetivo (Fase 2)
+# ---------------------------------------------------------------
+variables:
+  # Log-rentabilidades diarias ln(P_t / P_{t-1}). De los futuros solo se usa el cierre;
+  # el futuro del Brent (BZ=F) queda en el dataset pero NO entra en el modelo.
+  rentabilidades: [brent, wti, wti_fut_Close, gas_natural, cobre, oro,
+                   indice_dolar, usd_por_eur, cny_por_usd]
+  log_nivel: [vix]          # ln(VIX)
+  nivel_y_cambio: [tipo_bce]  # nivel y cambio diario
+  vol_ventana: 20           # volatilidad móvil (desv. típica) de la log-rentabilidad del Brent
+  media_movil: 252          # distancia ln(P_t) - ln(media móvil del Brent)
+
+preprocesado:
+  ventana: 60               # días hábiles de entrada (t-59 .. t)
+  horizontes: [5, 63, 252]  # días hábiles a predecir
+  winsor_inf: 0.005         # percentil inferior (calculado en el train de cada partición)
+  winsor_sup: 0.995         # percentil superior
+  # Variables discretas que NO se winsorizan: el tipo BCE cambia en <1 % de los días y
+  # los percentiles 0,5/99,5 de su cambio diario valen 0, lo que anularía la variable.
+  winsor_excluir: [tipo_bce, d_tipo_bce]
+
+# ---------------------------------------------------------------
+# Partición temporal (walk-forward expansivo con purga)
+# ---------------------------------------------------------------
+particion:
+  inicio_test: "2023-01-01"            # test final: muestras con t >= esta fecha
+  anios_validacion: [2018, 2019, 2020, 2021]
+  purga: 252                           # días hábiles entre fin de train e inicio de validación/test
+
+# ---------------------------------------------------------------
+# Modelos y entrenamiento (PyTorch, CPU)
+# ---------------------------------------------------------------
+entrenamiento:
+  redes: [rnn, lstm, gru]
+  rejilla:
+    units: [32, 64]
+    dropout: [0.0, 0.2]
+  lr: 0.001
+  batch: 64
+  max_epocas: 100
+  paciencia: 10
+  clip: 1.0
+  semillas_finales: [42, 7, 2026]      # el ajuste usa `semilla`
+
+# ---------------------------------------------------------------
+# Intervalo de incertidumbre (cuantiles de residuos out-of-fold)
+# ---------------------------------------------------------------
+intervalo:
+  q_inf: 0.10
+  q_sup: 0.90
+
+# ---------------------------------------------------------------
+# Análisis exploratorio
+# ---------------------------------------------------------------
+eda:
+  n_extremos: 15            # nº de días con |log-rentabilidad| más extrema
+
+# ---------------------------------------------------------------
+# Modelo de producción (el que usa la web)
+# Elegido tras la Fase 2: RNN simple, 32 unidades, dropout 0,2, 12 épocas (mediana de las
+# épocas óptimas de sus pliegues). Se reentrena con TODOS los datos disponibles.
+# ---------------------------------------------------------------
+produccion:
+  red: rnn
+  units: 32
+  dropout: 0.2
+  epocas: 12
+  semillas: [42, 7, 2026]
