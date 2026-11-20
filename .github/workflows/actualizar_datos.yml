@@ -1,0 +1,50 @@
+# Cada día laborable: descarga los datos, recalcula la previsión con el modelo guardado
+# (sin reentrenar) y exporta los JSON de la web. Si hay cambios, hace commit y push.
+name: Actualizar datos y previsión
+
+on:
+  schedule:
+    - cron: "30 6 * * 1-5"   # lunes a viernes, 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizacion-repo
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias (torch CPU)
+        run: pip install -r requirements.txt
+
+      - name: Descargar datos
+        run: python -m src.download
+
+      - name: Recalcular la previsión (sin reentrenar)
+        run: python -m src.produccion --solo-prediccion
+
+      - name: Exportar JSON de la web
+        run: python -m src.exportar_web
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data results/prediccion_actual.json web/data
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "chore: actualización diaria de datos y previsión"
+            git push
+          fi
