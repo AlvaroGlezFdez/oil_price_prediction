@@ -6,6 +6,14 @@
 
 const estado = { h: 5, hTest: 5, ciclosVisibles: true, datos: null };
 
+// ---------- Paleta (tema oscuro único) ----------
+const C = {
+  texto: "#ECEDEF", texto2: "#9A9CA5", texto3: "#6B6D76", borde: "#2A2B31",
+  tarjeta: "#212227", tarjeta2: "#1B1C21",
+  menta: "#8FD9C4", ambar: "#F2B84B", rosa: "#E7A9CF", azul: "#5AA9E6",
+  ambarSuave: "rgba(242,184,75,0.16)", sombreado: "rgba(255,255,255,0.035)",
+};
+
 // ---------- Formato ----------
 const fmt = (x, d = 2) => x == null || Number.isNaN(x) ? "—"
   : x.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -19,15 +27,10 @@ const fmtFechaLarga = (iso) => new Date(iso.slice(0, 10) + "T12:00:00")
   .toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 const NOMBRES = { rnn: "RNN simple", lstm: "LSTM", gru: "GRU", ingenuo: "Ingenuo" };
 const PLAZOS = { 5: "una semana (5 días hábiles)", 63: "unos tres meses (63 días hábiles)", 252: "un año (252 días hábiles)" };
+const CORTOS = { 5: "1 semana", 63: "3 meses", 252: "1 año" };
+const CONFIG_PLOTLY = { responsive: true, displayModeBar: false };
 
-// Colores leídos de las variables CSS (cambian con el tema)
-function colores() {
-  const s = getComputedStyle(document.documentElement);
-  const v = (n) => s.getPropertyValue(n).trim();
-  return { tinta: v("--tinta"), tinta2: v("--tinta-2"), tinta3: v("--tinta-3"), borde: v("--borde"),
-           superficie: v("--superficie"), acento: v("--acento"), acentoSuave: v("--acento-suave"),
-           ingenuo: v("--ingenuo"), sombreado: v("--sombreado") };
-}
+function iconos() { if (window.lucide) lucide.createIcons({ attrs: { "aria-hidden": "true" } }); }
 
 // ---------- Carga ----------
 async function cargar(nombre) {
@@ -37,22 +40,26 @@ async function cargar(nombre) {
 }
 
 async function iniciar() {
+  iconos();
   try {
     const [historico, prediccion, comparativa, test, ciclos, meta] = await Promise.all(
       ["historico", "prediccion", "comparativa", "test", "ciclos", "meta"].map(cargar));
     estado.datos = { historico, prediccion, comparativa, test, ciclos, meta };
   } catch (e) {
     document.querySelector("main").insertAdjacentHTML("afterbegin",
-      `<div class="panel" style="margin-top:24px">No se han podido cargar los datos (${e.message}).
+      `<div class="tarjeta" style="margin-top:20px">No se han podido cargar los datos (${e.message}).
        Si abres el fichero directamente, sírvelo con <code>python -m http.server</code>.</div>`);
     return;
   }
   pintarCabecera();
   pintarCiclos();
   pintarTabla();
+  pintarBarras();
   conectarControles();
   actualizarHorizonte();
   pintarTest();
+  navegacionActiva();
+  iconos();
 }
 
 // ---------- Cabecera ----------
@@ -80,11 +87,14 @@ function actualizarHorizonte() {
   document.getElementById("t-fecha-obj").textContent = `hacia el ${fmtFecha(p.fecha_objetivo_aprox)}`;
   const tVar = document.getElementById("t-var");
   tVar.textContent = fmtPct(p.variacion_pct);
-  tVar.className = "tarjeta__valor " + (p.variacion_pct >= 0 ? "sube" : "baja");
+  tVar.className = "kpi__valor " + (p.variacion_pct >= 0 ? "sube" : "baja");
+  const icoVar = document.getElementById("ico-var");
+  icoVar.className = "icono " + (p.variacion_pct >= 0 ? "icono--menta" : "icono--rosa");
+  icoVar.innerHTML = `<i data-lucide="${p.variacion_pct >= 0 ? "trending-up" : "trending-down"}"></i>`;
   document.getElementById("t-rango").textContent = `${fmt(li, 0)} – ${fmt(ls, 0)} $`;
   document.getElementById("t-ingenuo").textContent = `${fmt(p.ingenuo.precio_previsto)} $`;
   document.getElementById("t-ingenuo-rango").textContent =
-    `precio sin cambios · rango ${fmt(ili, 0)} – ${fmt(ils, 0)} $`;
+    `ingenuo: precio sin cambios · rango ${fmt(ili, 0)} – ${fmt(ils, 0)} $`;
 
   // Texto: qué significa
   const sentido = p.variacion_pct >= 0 ? "por encima" : "por debajo";
@@ -118,46 +128,53 @@ function actualizarHorizonte() {
   document.getElementById("x-fiabilidad").innerHTML = txt;
 
   pintarPrincipal();
+  pintarGauge();
+  iconos();
 }
 
-// ---------- Gráfico principal ----------
+// ---------- Estilo común de Plotly ----------
 const FORMATO_FECHAS = [
   { dtickrange: [null, "M1"], value: "%d-%m-%Y" },
   { dtickrange: ["M1", "M12"], value: "%m-%Y" },
   { dtickrange: ["M12", null], value: "%Y" },
 ];
 
-function layoutBase(c) {
+const estrecho = () => window.innerWidth < 600;
+
+function layoutBase() {
+  const movil = estrecho();
   return {
-    paper_bgcolor: c.superficie, plot_bgcolor: c.superficie,
-    font: { family: "Inter, system-ui, sans-serif", size: 12, color: c.tinta2 },
-    margin: { l: 52, r: 16, t: 16, b: 40 },
+    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    font: { family: "Inter, system-ui, sans-serif", size: 12, color: C.texto2 },
+    margin: { l: 48, r: 12, t: movil ? 36 : 12, b: movil ? 84 : 36 },
     separators: ",.",
     hovermode: "x unified",
-    hoverlabel: { bgcolor: c.superficie, bordercolor: c.borde, font: { color: c.tinta } },
-    legend: { orientation: "h", x: 0, y: 1.08, font: { size: 11 } },
-    xaxis: { type: "date", gridcolor: c.borde, linecolor: c.borde, tickformatstops: FORMATO_FECHAS,
-             tickfont: { color: c.tinta3 } },
-    yaxis: { title: { text: "$/barril", font: { size: 11, color: c.tinta3 } }, gridcolor: c.borde,
-             zeroline: false, tickfont: { color: c.tinta3 } },
+    hoverlabel: { bgcolor: C.tarjeta, bordercolor: C.borde, font: { color: C.texto, family: "Inter, sans-serif" } },
+    // En móvil la leyenda va debajo del gráfico para no pisar los botones de rango
+    legend: { orientation: "h", x: 0, y: movil ? -0.16 : 1.1, yanchor: movil ? "top" : "bottom",
+              font: { size: 12, color: C.texto2 }, bgcolor: "rgba(0,0,0,0)" },
+    xaxis: { type: "date", gridcolor: C.borde, linecolor: C.borde, zeroline: false, tickformatstops: FORMATO_FECHAS,
+             tickfont: { color: C.texto3 } },
+    yaxis: { title: { text: "$/barril", font: { size: 11, color: C.texto3 } }, gridcolor: C.borde,
+             zeroline: false, tickfont: { color: C.texto3 } },
   };
 }
 
-function sombrasCiclos(c) {
+// ---------- Gráfico principal ----------
+function sombrasCiclos() {
   if (!estado.ciclosVisibles) return { shapes: [], annotations: [] };
   const shapes = estado.datos.ciclos.map((ci) => ({
     type: "rect", xref: "x", yref: "paper", x0: ci.inicio, x1: ci.fin, y0: 0, y1: 1,
-    fillcolor: c.sombreado, line: { width: 0 }, layer: "below",
+    fillcolor: C.sombreado, line: { width: 0 }, layer: "below",
   }));
   const annotations = estado.datos.ciclos.map((ci, i) => ({
     xref: "x", yref: "paper", x: ci.inicio, y: i % 2 ? 0.93 : 0.99, xanchor: "left", yanchor: "top",
-    text: ci.id === "2025" ? "2025-26" : ci.id, showarrow: false, font: { size: 10, color: c.tinta3 },
+    text: ci.id === "2025" ? "2025-26" : ci.id, showarrow: false, font: { size: 10, color: C.texto3 },
   }));
   return { shapes, annotations };
 }
 
 function pintarPrincipal() {
-  const c = colores();
   const { historico, prediccion } = estado.datos;
   const p = prediccion.horizontes.find((x) => x.h === estado.h);
   const t0 = prediccion.fecha_datos, t1 = p.fecha_objetivo_aprox, p0 = prediccion.precio_actual;
@@ -165,24 +182,27 @@ function pintarPrincipal() {
 
   const trazas = [
     { x: historico.fechas, y: historico.precios, type: "scatter", mode: "lines", name: "Brent",
-      line: { color: c.tinta, width: 1.4 }, hovertemplate: "%{y:.2f} $<extra>Brent</extra>" },
+      line: { color: C.menta, width: 1.6 }, fill: "tozeroy",
+      fillgradient: { type: "vertical", colorscale: [[0, "rgba(143,217,196,0)"], [1, "rgba(143,217,196,0.28)"]] },
+      hovertemplate: "%{y:.2f} $<extra>Brent</extra>" },
     // Banda del 80 % en forma de cono: del precio actual al rango en t+h
     { x: [t0, t1, t1, t0], y: [p0, ls, li, p0], type: "scatter", mode: "lines", fill: "toself",
-      fillcolor: c.acentoSuave, line: { width: 0 }, name: "Rango 80 %", hoverinfo: "skip" },
+      fillcolor: C.ambarSuave, line: { width: 0 }, name: "Rango 80 %", hoverinfo: "skip" },
     { x: [t0, t1], y: [p0, p.precio_previsto], type: "scatter", mode: "lines+markers", name: "Previsión RNN",
-      line: { color: c.acento, width: 2, dash: "dash" }, marker: { size: [0, 10], color: c.acento },
+      line: { color: C.ambar, width: 2, dash: "dash" },
+      marker: { size: [0, 11], color: C.ambar, line: { width: 2, color: C.tarjeta } },
       hovertemplate: "%{y:.2f} $<extra>Previsión</extra>" },
     { x: [t1, t1], y: [li, ls], type: "scatter", mode: "markers", showlegend: false,
-      marker: { symbol: "line-ew", size: 14, line: { width: 2, color: c.acento } },
+      marker: { symbol: "line-ew", size: 14, line: { width: 2, color: C.ambar } },
       hovertemplate: "%{y:.2f} $<extra>Rango 80 %</extra>" },
     { x: [t0, t1], y: [p0, p0], type: "scatter", mode: "lines", name: "Ingenuo",
-      line: { color: c.ingenuo, width: 2, dash: "dot" }, hovertemplate: "%{y:.2f} $<extra>Ingenuo</extra>" },
+      line: { color: C.texto2, width: 1.8, dash: "dot" }, hovertemplate: "%{y:.2f} $<extra>Ingenuo</extra>" },
   ];
 
   const fin = new Date(t1); fin.setDate(fin.getDate() + 20);
   const ini = new Date(t0); ini.setFullYear(ini.getFullYear() - 3);
-  const layout = layoutBase(c);
-  Object.assign(layout, sombrasCiclos(c));
+  const layout = layoutBase();
+  Object.assign(layout, sombrasCiclos());
   layout.xaxis.range = [ini.toISOString().slice(0, 10), fin.toISOString().slice(0, 10)];
   layout.xaxis.rangeselector = {
     buttons: [
@@ -191,13 +211,12 @@ function pintarPrincipal() {
       { count: 10, label: "10 años", step: "year", stepmode: "backward" },
       { step: "all", label: "Todo" },
     ],
-    x: 1, xanchor: "right", y: 1.08, bgcolor: c.superficie, activecolor: c.acentoSuave,
-    bordercolor: c.borde, borderwidth: 1, font: { size: 11, color: c.tinta2 },
+    x: 1, xanchor: "right", y: 1.1, bgcolor: C.tarjeta2, activecolor: "rgba(143,217,196,0.25)",
+    bordercolor: C.borde, borderwidth: 1, font: { size: 11, color: C.texto2 },
   };
-  layout.legend.x = 0;
   layout.yaxis.range = rangoY(layout.xaxis.range[0], layout.xaxis.range[1]);
   const div = document.getElementById("grafico-principal");
-  Plotly.react(div, trazas, layout, { responsive: true, displayModeBar: false });
+  Plotly.react(div, trazas, layout, CONFIG_PLOTLY);
   // Al cambiar el rango de fechas (botones o zoom), el eje Y se ajusta a lo visible
   if (!div.dataset.escucha) {
     div.dataset.escucha = "1";
@@ -224,40 +243,103 @@ function rangoY(x0, x1) {
   return [Math.max(0, min - m), max + m];
 }
 
+// ---------- Medidor de cobertura ----------
+function pintarGauge() {
+  const c = filaComp(estado.datos.test.red, estado.h);
+  document.getElementById("gauge-h").textContent = `horizonte ${CORTOS[estado.h]}`;
+  const traza = {
+    type: "indicator", mode: "gauge+number+delta", value: c["cobertura_80_%_ensemble"],
+    number: { suffix: " %", valueformat: ".1f", font: { size: 30, color: C.texto, family: "Inter, sans-serif" } },
+    delta: { reference: 80, valueformat: ".1f", suffix: " pp vs objetivo", font: { size: 12 },
+             increasing: { color: C.menta, symbol: "▲ " }, decreasing: { color: C.rosa, symbol: "▼ " } },
+    gauge: {
+      shape: "angular",
+      axis: { range: [0, 100], tickvals: [0, 25, 50, 80, 100], ticksuffix: " %", tickcolor: C.borde,
+              tickfont: { size: 10, color: C.texto3 } },
+      bar: { color: C.menta, thickness: 0.32 },
+      bgcolor: C.tarjeta2, borderwidth: 0,
+      threshold: { line: { color: C.ambar, width: 3 }, thickness: 0.9, value: 80 },
+    },
+  };
+  Plotly.react("grafico-gauge", [traza], {
+    paper_bgcolor: "rgba(0,0,0,0)", margin: { l: 28, r: 28, t: 18, b: 6 }, separators: ",.",
+    font: { family: "Inter, system-ui, sans-serif", color: C.texto2 },
+    annotations: [{ text: "objetivo 80 %", x: 0.86, y: 0.98, xref: "paper", yref: "paper", showarrow: false,
+                    font: { size: 11, color: C.ambar } }],
+  }, CONFIG_PLOTLY);
+}
+
+// ---------- Barras de error ----------
+function pintarBarras() {
+  const red = estado.datos.test.red;
+  const hs = [5, 63, 252];
+  const x = hs.map((h) => CORTOS[h]);
+  const yRed = hs.map((h) => filaComp(red, h).RMSE_usd_ensemble);
+  const yIng = hs.map((h) => filaComp("ingenuo", h).RMSE_usd_ensemble);
+  const etiqueta = (v) => fmt(v, 1);
+  const trazas = [
+    { type: "bar", name: NOMBRES[red], x, y: yRed, marker: { color: C.ambar }, text: yRed.map(etiqueta),
+      textposition: "outside", textfont: { color: C.texto2, size: 11 }, hovertemplate: "%{y:.2f} $<extra>RNN</extra>" },
+    { type: "bar", name: "Ingenuo", x, y: yIng, marker: { color: C.texto3 }, text: yIng.map(etiqueta),
+      textposition: "outside", textfont: { color: C.texto2, size: 11 }, hovertemplate: "%{y:.2f} $<extra>Ingenuo</extra>" },
+  ];
+  const layout = {
+    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", separators: ",.",
+    font: { family: "Inter, system-ui, sans-serif", size: 12, color: C.texto2 },
+    margin: { l: 40, r: 8, t: 30, b: 28 }, barmode: "group", bargap: 0.35, bargroupgap: 0.12,
+    legend: { orientation: "h", x: 0, y: 1.18, font: { size: 12, color: C.texto2 } },
+    xaxis: { tickfont: { color: C.texto2 }, linecolor: C.borde },
+    yaxis: { gridcolor: C.borde, zeroline: false, tickfont: { color: C.texto3 }, ticksuffix: " $",
+             range: [0, Math.max(...yRed, ...yIng) * 1.22] },
+    hoverlabel: { bgcolor: C.tarjeta, bordercolor: C.borde, font: { color: C.texto } },
+  };
+  Plotly.react("grafico-barras", trazas, layout, CONFIG_PLOTLY);
+}
+
 // ---------- Ciclos ----------
 function pintarCiclos() {
   const cont = document.getElementById("lista-ciclos");
   cont.innerHTML = estado.datos.ciclos.map((ci) => `
-    <article class="ciclo">
-      <p class="ciclo__periodo">${fmtFecha(ci.inicio)} → ${fmtFecha(ci.fin)}</p>
+    <article class="tarjeta ciclo">
+      <p class="ciclo__periodo"><i data-lucide="calendar-range"></i>${fmtFecha(ci.inicio)} → ${fmtFecha(ci.fin)}</p>
       <h3>${ci.titulo}</h3>
       <p>${ci.texto}</p>
       ${ci.todo ? `<p class="ciclo__todo">Pendiente: ${ci.todo}</p>` : ""}
+      ${ci.fuentes ? `<p class="ciclo__fuentes">Fuentes: ${ci.fuentes}</p>` : ""}
     </article>`).join("");
 }
 
 // ---------- Test ----------
 function pintarTest() {
-  const c = colores();
   const d = estado.datos.test.horizontes[String(estado.hTest)];
   const trazas = [
     { x: d.fechas.concat([...d.fechas].reverse()), y: d.red_ls.concat([...d.red_li].reverse()),
-      type: "scatter", mode: "lines", fill: "toself", fillcolor: c.acentoSuave, line: { width: 0 },
+      type: "scatter", mode: "lines", fill: "toself", fillcolor: C.ambarSuave, line: { width: 0 },
       name: "Rango 80 % RNN", hoverinfo: "skip" },
     { x: d.fechas, y: d.real, type: "scatter", mode: "lines", name: "Brent real",
-      line: { color: c.tinta, width: 1.4 }, hovertemplate: "%{y:.2f} $<extra>Real</extra>" },
+      line: { color: C.menta, width: 1.6 }, hovertemplate: "%{y:.2f} $<extra>Real</extra>" },
     { x: d.fechas, y: d.red, type: "scatter", mode: "lines", name: "RNN",
-      line: { color: c.acento, width: 2 }, hovertemplate: "%{y:.2f} $<extra>RNN</extra>" },
+      line: { color: C.ambar, width: 1.8 }, hovertemplate: "%{y:.2f} $<extra>RNN</extra>" },
     { x: d.fechas, y: d.ingenuo, type: "scatter", mode: "lines", name: "Ingenuo",
-      line: { color: c.ingenuo, width: 1.6 }, hovertemplate: "%{y:.2f} $<extra>Ingenuo</extra>" },
+      line: { color: C.texto2, width: 1.4, dash: "dot" }, hovertemplate: "%{y:.2f} $<extra>Ingenuo</extra>" },
   ];
-  const layout = layoutBase(c);
-  layout.xaxis.title = { text: "fecha objetivo", font: { size: 11, color: c.tinta3 } };
-  layout.margin.b = 48;
-  Plotly.react("grafico-test", trazas, layout, { responsive: true, displayModeBar: false });
+  const layout = layoutBase();
+  layout.xaxis.title = { text: "fecha objetivo", font: { size: 11, color: C.texto3 } };
+  if (!estrecho()) layout.margin.b = 48;
+  else { layout.margin.t = 12; layout.xaxis.title = null; }
+  Plotly.react("grafico-test", trazas, layout, CONFIG_PLOTLY);
 }
 
 // ---------- Tabla ----------
+function barraMejora(m) {
+  // m en %, la barra se satura en ±50 %; el número siempre se muestra al lado
+  const ancho = Math.min(Math.abs(m), 50);
+  const clase = m >= 0 ? "pos" : "neg";
+  return `<div class="mejora" title="Mejora vs ingenuo: ${fmtPct(m)}">
+      <span class="mejora__pista"><span class="mejora__barra mejora__barra--${clase}" style="width:${ancho}%"></span></span>
+      <span class="mejora__num ${m >= 0 ? "sube" : "baja"}">${fmtPct(m)}</span></div>`;
+}
+
 function pintarTabla() {
   const filas = estado.datos.comparativa;
   const red = estado.datos.test.red;
@@ -272,8 +354,8 @@ function pintarTabla() {
         <td>${NOMBRES[f.modelo] || f.modelo}${f.modelo === red ? '<span class="chip">en uso</span>' : ""}</td>
         <td class="num">${fmt(f.MAE_usd_ensemble)}</td>
         <td class="num">${fmt(f.RMSE_usd_ensemble)}</td>
-        <td class="num">${ing ? "—" : fmtPct(100 * f.mejora_vs_ingenuo_ensemble)}</td>
-        <td class="num">${ing ? "—" : fmt(f.DM_p_valor, 2)}</td>
+        <td>${ing ? '<span class="texto-sec">referencia</span>' : barraMejora(100 * f.mejora_vs_ingenuo_ensemble)}</td>
+        <td class="centro">${ing ? "—" : `<span class="pastilla">p = ${fmt(f.DM_p_valor, 2)}</span>`}</td>
         <td class="num">${fmt(f.sesgo_usd_ensemble)}</td>
         <td class="num">${dir}</td>
         <td class="num">${fmt(f["cobertura_80_%_ensemble"], 1)} %</td>
@@ -282,6 +364,32 @@ function pintarTabla() {
     }
   }
   document.querySelector("#tabla-comp tbody").innerHTML = html.join("");
+}
+
+// ---------- Navegación: sección activa y título de la barra superior ----------
+function navegacionActiva() {
+  const enlaces = [...document.querySelectorAll("#nav a")];
+  const titulo = document.getElementById("titulo-seccion");
+  const secciones = [...document.querySelectorAll("section[data-titulo]")];
+  const activar = (id) => {
+    enlaces.forEach((a) => {
+      const activo = a.dataset.seccion === id;
+      a.classList.toggle("activo", activo);
+      if (activo) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    });
+    const s = secciones.find((x) => x.id === id);
+    if (s) titulo.textContent = s.dataset.titulo;
+  };
+  // La sección activa es la última cuyo inicio ha pasado por debajo de la barra superior
+  const alDesplazar = () => {
+    const limite = window.innerHeight * 0.3;
+    let actual = secciones[0].id;
+    for (const s of secciones) if (s.getBoundingClientRect().top <= limite) actual = s.id;
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) actual = secciones[secciones.length - 1].id;
+    activar(actual);
+  };
+  window.addEventListener("scroll", alDesplazar, { passive: true });
+  alDesplazar();
 }
 
 // ---------- Controles ----------
@@ -300,18 +408,8 @@ function conectarControles() {
   segmentado("selector-test", (h) => { estado.hTest = h; pintarTest(); });
   document.getElementById("chk-ciclos").addEventListener("change", (e) => {
     estado.ciclosVisibles = e.target.checked;
-    Plotly.relayout("grafico-principal", sombrasCiclos(colores()));
+    Plotly.relayout("grafico-principal", sombrasCiclos());
   });
-  document.getElementById("btn-tema").addEventListener("click", () => {
-    const raiz = document.documentElement;
-    const oscuro = raiz.dataset.theme ? raiz.dataset.theme === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    raiz.dataset.theme = oscuro ? "light" : "dark";
-    try { localStorage.setItem("tema", raiz.dataset.theme); } catch (e) {}
-    pintarPrincipal();
-    pintarTest();
-  });
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { pintarPrincipal(); pintarTest(); });
 }
 
 iniciar();

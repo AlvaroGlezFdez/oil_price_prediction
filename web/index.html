@@ -5,210 +5,284 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Previsión del Brent</title>
   <meta name="description" content="Predicción del precio del petróleo Brent a 1 semana, 3 meses y 1 año con redes neuronales recurrentes, con rangos de incertidumbre.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M16 6c4 6 7 9.5 7 13a7 7 0 0 1-14 0c0-3.5 3-7 7-13z' fill='white'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#17181C">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23212227'/%3E%3Cpath d='M16 6c4 6 7 9.5 7 13a7 7 0 0 1-14 0c0-3.5 3-7 7-13z' fill='%238FD9C4'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script>
-    // Tema guardado antes de pintar (evita parpadeo)
-    try { const t = localStorage.getItem("tema"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
-  </script>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
-  <header class="cabecera">
-    <div class="contenedor cabecera__fila">
-      <div class="marca">
-        <span class="marca__logo" aria-hidden="true"></span>
-        <div>
-          <p class="marca__sup">Caso II · Aprendizaje Automático</p>
-          <h1 class="marca__titulo">Previsión del petróleo Brent</h1>
-        </div>
-      </div>
-      <button id="btn-tema" class="btn-tema" type="button" aria-label="Cambiar tema claro/oscuro">
-        <span class="btn-tema__icono" aria-hidden="true"></span>
-      </button>
-    </div>
-    <div class="contenedor cabecera__precio">
-      <div>
-        <p class="etiqueta">Último precio del Brent</p>
-        <p class="precio-grande"><span id="precio-actual">—</span><span class="unidad"> $/barril</span></p>
-        <p class="texto-sec">Dato del <strong id="fecha-dato">—</strong> · fuente: FRED (EIA)</p>
-      </div>
-      <p class="aviso-actualizacion"><span class="punto" aria-hidden="true"></span>Se actualiza automáticamente cada día laborable</p>
-    </div>
-  </header>
+  <!-- Barra lateral (en móvil, menú superior compacto) -->
+  <aside class="lateral" aria-label="Navegación">
+    <a class="logo" href="#prevision">
+      <span class="logo__icono"><i data-lucide="droplet"></i></span>
+      <span class="logo__texto">Brent · Previsión</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a href="#prevision" data-seccion="prevision"><i data-lucide="crosshair"></i><span>Previsión</span></a>
+      <a href="#historico" data-seccion="historico"><i data-lucide="chart-line"></i><span>Histórico</span></a>
+      <a href="#ciclos" data-seccion="ciclos"><i data-lucide="history"></i><span>Ciclos</span></a>
+      <a href="#test" data-seccion="test"><i data-lucide="flask-conical"></i><span>¿Cómo lo habría hecho?</span></a>
+      <a href="#comparativa" data-seccion="comparativa"><i data-lucide="table"></i><span>Comparativa</span></a>
+      <a href="#metodologia" data-seccion="metodologia"><i data-lucide="book-open"></i><span>Metodología</span></a>
+      <a href="#actualizacion" data-seccion="actualizacion"><i data-lucide="refresh-cw"></i><span>Actualización</span></a>
+    </nav>
+    <p class="lateral__pie">Caso II · Aprendizaje Automático</p>
+  </aside>
 
-  <main class="contenedor">
-    <!-- Selector de horizonte, tarjetas y explicación -->
-    <section class="seccion" aria-labelledby="t-prevision">
-      <div class="seccion__cabeza">
-        <h2 id="t-prevision">Previsión</h2>
-        <div class="segmentado" role="tablist" aria-label="Horizonte de previsión" id="selector-h">
-          <button role="tab" data-h="5" aria-selected="true">Corto · 5 días</button>
-          <button role="tab" data-h="63" aria-selected="false">Medio · 3 meses</button>
-          <button role="tab" data-h="252" aria-selected="false">Largo · 1 año</button>
-        </div>
+  <div class="principal">
+    <!-- Barra superior -->
+    <header class="superior">
+      <div class="superior__titulo">
+        <h1 id="titulo-seccion">Previsión</h1>
+        <p class="texto-sec">
+          <i data-lucide="calendar" class="ico-inline"></i>
+          Último dato: <strong id="fecha-dato">—</strong>
+          <span class="separador" aria-hidden="true">·</span>
+          <span class="estado"><span class="punto" aria-hidden="true"></span>Se actualiza automáticamente cada día laborable</span>
+        </p>
       </div>
+      <div class="segmentado" role="tablist" aria-label="Horizonte de previsión" id="selector-h">
+        <button role="tab" data-h="5" aria-selected="true">1 semana</button>
+        <button role="tab" data-h="63" aria-selected="false">3 meses</button>
+        <button role="tab" data-h="252" aria-selected="false">1 año</button>
+      </div>
+    </header>
 
-      <div class="tarjetas">
+    <main>
+      <!-- PREVISIÓN -->
+      <section id="prevision" class="seccion" data-titulo="Previsión" aria-label="Previsión">
+        <div class="kpis">
+          <article class="tarjeta kpi">
+            <div class="kpi__cabeza">
+              <span class="icono icono--menta"><i data-lucide="droplet"></i></span>
+              <p class="etiqueta">Último precio del Brent</p>
+            </div>
+            <p class="kpi__valor"><span id="precio-actual">—</span> <span class="unidad">$</span></p>
+            <p class="kpi__pie">Fuente: FRED (EIA) · $/barril</p>
+          </article>
+          <article class="tarjeta kpi">
+            <div class="kpi__cabeza">
+              <span class="icono icono--ambar"><i data-lucide="target"></i></span>
+              <p class="etiqueta">Precio previsto</p>
+            </div>
+            <p class="kpi__valor" id="t-precio">—</p>
+            <p class="kpi__pie"><span id="t-fecha-obj">—</span> · vs ingenuo: <strong id="t-ingenuo">—</strong></p>
+          </article>
+          <article class="tarjeta kpi">
+            <div class="kpi__cabeza">
+              <span class="icono icono--rosa" id="ico-var"><i data-lucide="trending-down"></i></span>
+              <p class="etiqueta">Variación esperada</p>
+            </div>
+            <p class="kpi__valor" id="t-var">—</p>
+            <p class="kpi__pie">respecto al último precio</p>
+          </article>
+          <article class="tarjeta kpi">
+            <div class="kpi__cabeza">
+              <span class="icono icono--azul"><i data-lucide="arrow-up-down"></i></span>
+              <p class="etiqueta">Rango probable (80 %)</p>
+            </div>
+            <p class="kpi__valor" id="t-rango">—</p>
+            <p class="kpi__pie">8 de cada 10 veces, el precio real cayó en un rango así · <span id="t-ingenuo-rango">—</span></p>
+          </article>
+        </div>
+
+        <div class="fila-graficos">
+          <article class="tarjeta">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--menta"><i data-lucide="gauge"></i></span>
+              <div>
+                <h2>Cobertura real del rango del 80 %</h2>
+                <p class="texto-sec">Test 2023-2026 · <span id="gauge-h">—</span></p>
+              </div>
+            </div>
+            <div id="grafico-gauge" class="grafico grafico--gauge" role="img"
+                 aria-label="Porcentaje de veces que el precio real cayó dentro del rango del 80 % en el periodo de prueba"></div>
+            <p class="nota">Lo ideal es acercarse a la marca del 80 %: por debajo, el rango se queda corto; muy por encima, es demasiado ancho.</p>
+          </article>
+          <article class="tarjeta">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--ambar"><i data-lucide="chart-column"></i></span>
+              <div>
+                <h2>Error de la RNN frente al ingenuo</h2>
+                <p class="texto-sec">RMSE en dólares, test 2023-2026 (menos es mejor)</p>
+              </div>
+            </div>
+            <div id="grafico-barras" class="grafico grafico--gauge" role="img"
+                 aria-label="RMSE de la RNN y del modelo ingenuo en los tres horizontes"></div>
+          </article>
+        </div>
+
+        <div class="explicacion">
+          <article class="tarjeta">
+            <div class="tarjeta__cabeza tarjeta__cabeza--compacta">
+              <span class="icono icono--menta"><i data-lucide="lightbulb"></i></span><h2>Qué significa</h2>
+            </div>
+            <p id="x-significa">—</p>
+          </article>
+          <article class="tarjeta">
+            <div class="tarjeta__cabeza tarjeta__cabeza--compacta">
+              <span class="icono icono--azul"><i data-lucide="circle-help"></i></span><h2>¿Cuánto fiarse?</h2>
+            </div>
+            <p id="x-fiabilidad">—</p>
+          </article>
+          <article class="tarjeta">
+            <div class="tarjeta__cabeza tarjeta__cabeza--compacta">
+              <span class="icono icono--rosa"><i data-lucide="triangle-alert"></i></span><h2>Qué puede invalidarla</h2>
+            </div>
+            <p>Cualquier sorpresa que el pasado no recoge: decisiones de la <strong>OPEP+</strong> sobre
+              producción, conflictos <strong>geopolíticos</strong> en zonas productoras, una
+              <strong>recesión mundial</strong>, movimientos fuertes del <strong>dólar</strong>, cambios
+              en los <strong>inventarios</strong> o fenómenos de <strong>clima extremo</strong>
+              (huracanes, olas de frío).</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- HISTÓRICO -->
+      <section id="historico" class="seccion" data-titulo="Histórico y previsión" aria-label="Histórico y previsión">
         <article class="tarjeta">
-          <p class="etiqueta">Precio previsto</p>
-          <p class="tarjeta__valor" id="t-precio">—</p>
-          <p class="texto-sec" id="t-fecha-obj">—</p>
+          <div class="tarjeta__cabeza tarjeta__cabeza--entre">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--menta"><i data-lucide="chart-line"></i></span>
+              <div>
+                <h2>Histórico y previsión</h2>
+                <p class="texto-sec">Precio diario del Brent desde 2000</p>
+              </div>
+            </div>
+            <label class="interruptor">
+              <input type="checkbox" id="chk-ciclos" checked>
+              <span class="interruptor__pista" aria-hidden="true"></span>
+              Mostrar ciclos históricos
+            </label>
+          </div>
+          <div id="grafico-principal" class="grafico" role="img"
+               aria-label="Precio histórico del Brent con la previsión y su rango del 80 %"></div>
+          <p class="nota">Línea ámbar discontinua: previsión del modelo hasta la fecha objetivo, con su rango del 80 % sombreado.
+            Línea gris de puntos: referencia ingenua (el precio se queda como hoy).</p>
         </article>
+      </section>
+
+      <!-- CICLOS -->
+      <section id="ciclos" class="seccion" data-titulo="Ciclos históricos" aria-label="Ciclos históricos">
+        <h2 class="seccion__titulo">Ciclos históricos</h2>
+        <div class="ciclos" id="lista-ciclos"></div>
+      </section>
+
+      <!-- TEST -->
+      <section id="test" class="seccion" data-titulo="¿Cómo lo habría hecho?" aria-label="¿Cómo lo habría hecho?">
         <article class="tarjeta">
-          <p class="etiqueta">Variación esperada</p>
-          <p class="tarjeta__valor" id="t-var">—</p>
-          <p class="texto-sec">respecto al último precio</p>
+          <div class="tarjeta__cabeza tarjeta__cabeza--entre">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--ambar"><i data-lucide="flask-conical"></i></span>
+              <div>
+                <h2>¿Cómo lo habría hecho?</h2>
+                <p class="texto-sec">Periodo de prueba 2023-2026: datos que el modelo nunca vio al entrenar. Cada punto
+                  compara lo que se habría previsto con el precio que hubo de verdad en esa fecha.</p>
+              </div>
+            </div>
+            <div class="segmentado segmentado--pequeno" role="tablist" aria-label="Horizonte del test" id="selector-test">
+              <button role="tab" data-h="5" aria-selected="true">5 días</button>
+              <button role="tab" data-h="63" aria-selected="false">3 meses</button>
+              <button role="tab" data-h="252" aria-selected="false">1 año</button>
+            </div>
+          </div>
+          <div id="grafico-test" class="grafico grafico--bajo" role="img"
+               aria-label="Precio real frente a la previsión de la red y del modelo ingenuo en el periodo de prueba"></div>
         </article>
-        <article class="tarjeta tarjeta--destacada">
-          <p class="etiqueta">Rango probable (80 %)</p>
-          <p class="tarjeta__valor" id="t-rango">—</p>
-          <p class="texto-sec">8 de cada 10 veces, el precio real cayó en un rango así</p>
-        </article>
+      </section>
+
+      <!-- COMPARATIVA -->
+      <section id="comparativa" class="seccion" data-titulo="Comparativa de modelos" aria-label="Comparativa de modelos">
         <article class="tarjeta">
-          <p class="etiqueta">Referencia ingenua</p>
-          <p class="tarjeta__valor" id="t-ingenuo">—</p>
-          <p class="texto-sec" id="t-ingenuo-rango">—</p>
+          <div class="tarjeta__cabeza">
+            <span class="icono icono--azul"><i data-lucide="table"></i></span>
+            <div>
+              <h2>Comparativa de modelos</h2>
+              <p class="texto-sec">Test 2023-2026 · previsión media de 3 semillas</p>
+            </div>
+          </div>
+          <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-comp">
+              <thead>
+                <tr>
+                  <th scope="col">Modelo</th>
+                  <th scope="col" class="num">MAE ($)</th>
+                  <th scope="col" class="num">RMSE ($)</th>
+                  <th scope="col">Mejora vs ingenuo</th>
+                  <th scope="col" class="centro">p-valor DM</th>
+                  <th scope="col" class="num">Sesgo ($)</th>
+                  <th scope="col" class="num">Acierto dirección</th>
+                  <th scope="col" class="num">Cobertura 80 %</th>
+                  <th scope="col" class="num">Parámetros</th>
+                  <th scope="col" class="num">Tiempo (s)</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="nota">Test 2023-2026. Métricas de la previsión media de 3 semillas. <strong>Mejora</strong>:
+            1 − RMSE del modelo / RMSE del ingenuo. <strong>p-valor DM</strong>: contraste de Diebold-Mariano frente al
+            ingenuo (por debajo de 0,05 la diferencia sería significativa). <strong>Sesgo</strong>: media de previsto − real.
+            En el ingenuo, la columna de dirección muestra el % de veces que el precio subió. Tiempo: ajuste de hiperparámetros + entrenamiento final.</p>
+          <div class="conclusion">
+            <h3>Conclusión</h3>
+            <p>Ninguna red mejora de forma significativa a la referencia ingenua en ningún horizonte. La RNN simple
+              es la única que la iguala o la mejora ligeramente, con la menor variabilidad y el menor coste, y por eso es
+              la que usa esta herramienta. Su valor no está en la cifra central, sino en <strong>los rangos de riesgo</strong>,
+              que crecen con el horizonte, y en saber <strong>cuándo no fiarse</strong>.</p>
+          </div>
         </article>
-      </div>
+      </section>
 
-      <div class="explicacion">
-        <div>
-          <h3>Qué significa</h3>
-          <p id="x-significa">—</p>
-        </div>
-        <div>
-          <h3>¿Cuánto fiarse?</h3>
-          <p id="x-fiabilidad">—</p>
-        </div>
-        <div>
-          <h3>Qué puede invalidarla</h3>
-          <p>Cualquier sorpresa que el pasado no recoge: decisiones de la <strong>OPEP+</strong> sobre
-            producción, conflictos <strong>geopolíticos</strong> en zonas productoras, una
-            <strong>recesión mundial</strong>, movimientos fuertes del <strong>dólar</strong>, cambios
-            en los <strong>inventarios</strong> o fenómenos de <strong>clima extremo</strong>
-            (huracanes, olas de frío).</p>
-        </div>
+      <!-- METODOLOGÍA Y ACTUALIZACIÓN -->
+      <div class="dos-columnas">
+        <section id="metodologia" class="seccion" data-titulo="Metodología" aria-label="Metodología">
+          <article class="tarjeta tarjeta--alta">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--menta"><i data-lucide="book-open"></i></span><h2>Metodología</h2>
+            </div>
+            <ul class="lista">
+              <li><strong>Qué se predice.</strong> El cambio porcentual del precio (en logaritmo) a 5, 63 y 252 días hábiles,
+                a partir de los últimos 60 días de 14 variables: Brent, WTI, gas, cobre, oro, dólar, euro, yuan, VIX y tipos del BCE.</li>
+              <li><strong>Cómo se evaluó.</strong> Siempre con el pasado para predecir el futuro (<em>walk-forward</em>):
+                se entrena con los años anteriores y se valida en 2018, 2019, 2020 y 2021, dejando un hueco de un año
+                (<em>purga</em>) para que ninguna respuesta se filtre. 2023-2026 se reservó para la prueba final y se usó una sola vez.</li>
+              <li><strong>Rangos.</strong> Se calculan con los errores reales que cometió el modelo en los años de validación:
+                el rango del 80 % recoge el 80 % central de esos errores.</li>
+              <li><strong>Modelo.</strong> Una red recurrente simple (RNN) de 32 unidades; se compararon también LSTM y GRU en
+                igualdad de condiciones.</li>
+            </ul>
+          </article>
+        </section>
+        <section id="actualizacion" class="seccion" data-titulo="Actualización" aria-label="Actualización">
+          <article class="tarjeta tarjeta--alta">
+            <div class="tarjeta__cabeza">
+              <span class="icono icono--azul"><i data-lucide="refresh-cw"></i></span><h2>Actualización</h2>
+            </div>
+            <p class="texto-sec">Todo el cálculo se hace en Python y la web solo lee los resultados. Con GitHub Actions:</p>
+            <ul class="lista">
+              <li><strong>Cada día laborable</strong> se descargan los datos nuevos y se recalcula la previsión.</li>
+              <li><strong>El día 1 de cada mes</strong> se reentrena el modelo con todos los datos (misma configuración).</li>
+            </ul>
+            <dl class="datos-fechas">
+              <div><dt>Último entrenamiento</dt><dd id="fecha-entreno">—</dd></div>
+              <div><dt>Página generada</dt><dd id="fecha-gen">—</dd></div>
+            </dl>
+            <a class="boton" id="enlace-actions" href="#" target="_blank" rel="noopener">
+              <i data-lucide="external-link"></i>Abrir GitHub Actions para lanzarlo a mano</a>
+          </article>
+        </section>
       </div>
-    </section>
+    </main>
 
-    <!-- Gráfico principal -->
-    <section class="seccion" aria-labelledby="t-grafico">
-      <div class="seccion__cabeza">
-        <h2 id="t-grafico">Histórico y previsión</h2>
-        <label class="interruptor">
-          <input type="checkbox" id="chk-ciclos" checked>
-          <span class="interruptor__pista" aria-hidden="true"></span>
-          Mostrar ciclos históricos
-        </label>
-      </div>
-      <div class="panel">
-        <div id="grafico-principal" class="grafico" role="img"
-             aria-label="Precio histórico del Brent con la previsión y su rango del 80 %"></div>
-        <p class="nota">Línea azul discontinua: previsión del modelo hasta la fecha objetivo, con su rango del 80 % sombreado.
-          Línea naranja: referencia ingenua (el precio se queda como hoy).</p>
-      </div>
-    </section>
-
-    <!-- Ciclos -->
-    <section class="seccion" aria-labelledby="t-ciclos">
-      <div class="seccion__cabeza"><h2 id="t-ciclos">Ciclos históricos</h2></div>
-      <div class="ciclos" id="lista-ciclos"></div>
-    </section>
-
-    <!-- Cómo lo habría hecho -->
-    <section class="seccion" aria-labelledby="t-test">
-      <div class="seccion__cabeza">
-        <h2 id="t-test">¿Cómo lo habría hecho?</h2>
-        <div class="segmentado" role="tablist" aria-label="Horizonte del test" id="selector-test">
-          <button role="tab" data-h="5" aria-selected="true">5 días</button>
-          <button role="tab" data-h="63" aria-selected="false">3 meses</button>
-          <button role="tab" data-h="252" aria-selected="false">1 año</button>
-        </div>
-      </div>
-      <div class="panel">
-        <p class="texto-sec">Periodo de prueba 2023-2026: datos que el modelo nunca vio al entrenar. Cada punto
-          compara lo que se habría previsto con el precio que hubo de verdad en esa fecha.</p>
-        <div id="grafico-test" class="grafico grafico--bajo" role="img"
-             aria-label="Precio real frente a la previsión de la red y del modelo ingenuo en el periodo de prueba"></div>
-      </div>
-    </section>
-
-    <!-- Comparativa -->
-    <section class="seccion" aria-labelledby="t-comp">
-      <div class="seccion__cabeza"><h2 id="t-comp">Comparativa de modelos</h2></div>
-      <div class="panel">
-        <div class="tabla-envoltura">
-          <table class="tabla" id="tabla-comp">
-            <thead>
-              <tr>
-                <th scope="col">Modelo</th>
-                <th scope="col" class="num">MAE ($)</th>
-                <th scope="col" class="num">RMSE ($)</th>
-                <th scope="col" class="num">Mejora vs ingenuo</th>
-                <th scope="col" class="num">p-valor DM</th>
-                <th scope="col" class="num">Sesgo ($)</th>
-                <th scope="col" class="num">Acierto dirección</th>
-                <th scope="col" class="num">Cobertura 80 %</th>
-                <th scope="col" class="num">Parámetros</th>
-                <th scope="col" class="num">Tiempo (s)</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <p class="nota">Test 2023-2026. Métricas de la previsión media de 3 semillas. <strong>Mejora</strong>:
-          1 − RMSE del modelo / RMSE del ingenuo. <strong>p-valor DM</strong>: contraste de Diebold-Mariano frente al
-          ingenuo (por debajo de 0,05 la diferencia sería significativa). <strong>Sesgo</strong>: media de previsto − real.
-          En el ingenuo, la columna de dirección muestra el % de veces que el precio subió. Tiempo: ajuste de hiperparámetros + entrenamiento final.</p>
-        <div class="conclusion">
-          <h3>Conclusión</h3>
-          <p>Ninguna red mejora de forma significativa a la referencia ingenua en ningún horizonte. La RNN simple
-            es la única que la iguala o la mejora ligeramente, con la menor variabilidad y el menor coste, y por eso es
-            la que usa esta herramienta. Su valor no está en la cifra central, sino en <strong>los rangos de riesgo</strong>,
-            que crecen con el horizonte, y en saber <strong>cuándo no fiarse</strong>.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Metodología y actualización -->
-    <section class="seccion dos-columnas" aria-label="Metodología y actualización">
-      <div class="panel">
-        <h2>Metodología</h2>
-        <ul class="lista">
-          <li><strong>Qué se predice.</strong> El cambio porcentual del precio (en logaritmo) a 5, 63 y 252 días hábiles,
-            a partir de los últimos 60 días de 14 variables: Brent, WTI, gas, cobre, oro, dólar, euro, yuan, VIX y tipos del BCE.</li>
-          <li><strong>Cómo se evaluó.</strong> Siempre con el pasado para predecir el futuro (<em>walk-forward</em>):
-            se entrena con los años anteriores y se valida en 2018, 2019, 2020 y 2021, dejando un hueco de un año
-            (<em>purga</em>) para que ninguna respuesta se filtre. 2023-2026 se reservó para la prueba final y se usó una sola vez.</li>
-          <li><strong>Rangos.</strong> Se calculan con los errores reales que cometió el modelo en los años de validación:
-            el rango del 80 % recoge el 80 % central de esos errores.</li>
-          <li><strong>Modelo.</strong> Una red recurrente simple (RNN) de 32 unidades; se compararon también LSTM y GRU en
-            igualdad de condiciones.</li>
-        </ul>
-      </div>
-      <div class="panel">
-        <h2>Actualización</h2>
-        <p>Todo el cálculo se hace en Python y la web solo lee los resultados. Con GitHub Actions:</p>
-        <ul class="lista">
-          <li><strong>Cada día laborable</strong> se descargan los datos nuevos y se recalcula la previsión.</li>
-          <li><strong>El día 1 de cada mes</strong> se reentrena el modelo con todos los datos (misma configuración).</li>
-        </ul>
-        <p class="texto-sec">Último entrenamiento: <strong id="fecha-entreno">—</strong><br>
-          Página generada: <strong id="fecha-gen">—</strong></p>
-        <a class="boton" id="enlace-actions" href="#" target="_blank" rel="noopener">Abrir GitHub Actions para lanzarlo a mano</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="pie">
-    <div class="contenedor">
+    <footer class="pie">
       <p>Herramienta educativa. No constituye asesoramiento financiero. Datos: FRED y Yahoo Finance.</p>
-    </div>
-  </footer>
+    </footer>
+  </div>
 
   <script src="app.js"></script>
 </body>
