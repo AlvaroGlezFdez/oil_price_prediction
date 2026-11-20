@@ -1,0 +1,89 @@
+2026-11-18 19:47:33 | Variables de entrada (14): r_brent, r_wti, r_wti_fut_Close, r_gas_natural, r_cobre, r_oro, r_indice_dolar, r_usd_por_eur, r_cny_por_usd, ln_vix, tipo_bce, d_tipo_bce, vol20_brent, dist_mm252
+2026-11-18 19:47:33 | Primera muestra válida: 2001-07-12 | última: 2026-11-17
+2026-11-18 19:47:33 | Particiones:
+   particion train_inicio  train_fin  n_train       eval eval_inicio   eval_fin  n_eval  dias_purga  n_eval_y_5  n_eval_y_63  n_eval_y_252
+pliegue_2018   2001-07-12 2017-01-06     3699 validacion  2018-01-02 2018-12-28     252         252         252          252           252
+pliegue_2019   2001-07-12 2017-12-29     3951 validacion  2019-01-02 2019-12-31     257         252         257          257           257
+pliegue_2020   2001-07-12 2019-01-08     4208 validacion  2020-01-02 2020-12-31     255         252         255          255           255
+pliegue_2021   2001-07-12 2020-01-06     4463 validacion  2021-01-04 2021-12-31     253         252         253          253           253
+       final   2001-07-12 2021-12-31     4968       test  2023-01-03 2026-11-10     976         252         976          918           729
+2026-11-18 19:47:33 | Hilos de torch: 4 | rejilla: [(32, 0.0), (32, 0.2), (64, 0.0), (64, 0.2)] | max_epocas: 100
+2026-11-18 19:48:02 | rnn  u32_d0.0  pliegue_2018  val=0.4743  época óptima= 13/ 23  24.6s  (1635 parám.)
+2026-11-18 19:48:19 | rnn  u32_d0.0  pliegue_2019  val=1.3995  época óptima=  3/ 13  17.4s  (1635 parám.)
+2026-11-18 19:49:04 | rnn  u32_d0.0  pliegue_2020  val=4.8394  época óptima= 24/ 34  44.5s  (1635 parám.)
+2026-11-18 19:49:22 | rnn  u32_d0.0  pliegue_2021  val=0.6951  época óptima=  3/ 13  18.1s  (1635 parám.)
+2026-11-18 19:49:39 | rnn  u32_d0.2  pliegue_2018  val=0.4475  época óptima=  3/ 13  16.8s  (1635 parám.)
+2026-11-18 19:50:18 | rnn  u32_d0.2  pliegue_2019  val=1.1971  época óptima= 21/ 31  39.3s  (1635 parám.)
+2026-11-18 19:51:04 | rnn  u32_d0.2  pliegue_2020  val=4.8536  época óptima= 25/ 35  46.5s  (1635 parám.)
+2026-11-18 19:51:24 | rnn  u32_d0.2  pliegue_2021  val=0.7100  época óptima=  3/ 13  19.5s  (1635 parám.)
+2026-11-18 19:51:49 | rnn  u64_d0.0  pliegue_2018  val=0.4584  época óptima=  2/ 12  24.9s  (5315 parám.)
+2026-11-18 19:52:19 | rnn  u64_d0.0  pliegue_2019  val=1.6452  época óptima=  7/ 17  30.3s  (5315 parám.)
+2026-11-18 19:53:50 | rnn  u64_d0.0  pliegue_2020  val=4.9856  época óptima= 30/ 40  90.3s  (5315 parám.)
+2026-11-18 19:54:19 | rnn  u64_d0.0  pliegue_2021  val=0.6437  época óptima=  2/ 12  29.4s  (5315 parám.)
+2026-11-18 19:54:50 | rnn  u64_d0.2  pliegue_2018  val=0.4615  época óptima=  2/ 12  30.5s  (5315 parám.)
+2026-11-18 19:55:49 | rnn  u64_d0.2  pliegue_2019  val=1.6466  época óptima= 15/ 25  59.9s  (5315 parám.)
+2026-11-18 19:56:33 | rnn  u64_d0.2  pliegue_2020  val=4.9106  época óptima=  7/ 17  43.2s  (5315 parám.)
+2026-11-18 19:57:02 | rnn  u64_d0.2  pliegue_2021  val=0.6273  época óptima=  3/ 13  29.3s  (5315 parám.)
+2026-11-18 19:57:14 | lstm u32_d0.0  pliegue_2018  val=0.4476  época óptima=  4/ 14  12.4s  (6243 parám.)
+2026-11-18 19:57:41 | lstm u32_d0.0  pliegue_2019  val=1.7403  época óptima= 15/ 25  26.3s  (6243 parám.)
+2026-11-18 22:48:56 | lstm u32_d0.0  pliegue_2020  val=4.9331  época óptima= 11/ 21  10275.7s  (6243 parám.)
+2026-11-18 22:49:24 | lstm u32_d0.0  pliegue_2021  val=0.7191  época óptima=  2/ 12  27.2s  (6243 parám.)
+2026-11-18 22:49:43 | lstm u32_d0.2  pliegue_2018  val=0.4339  época óptima=  3/ 13  19.0s  (6243 parám.)
+2026-11-18 22:50:01 | lstm u32_d0.2  pliegue_2019  val=1.6260  época óptima=  5/ 15  17.9s  (6243 parám.)
+2026-11-18 22:50:19 | lstm u32_d0.2  pliegue_2020  val=4.9790  época óptima= 15/ 25  18.7s  (6243 parám.)
+2026-11-18 22:50:39 | lstm u32_d0.2  pliegue_2021  val=0.6535  época óptima=  9/ 19  19.1s  (6243 parám.)
+2026-11-18 22:50:53 | lstm u64_d0.0  pliegue_2018  val=0.4198  época óptima=  2/ 12  14.6s  (20675 parám.)
+2026-11-18 22:51:14 | lstm u64_d0.0  pliegue_2019  val=1.7026  época óptima=  3/ 13  21.0s  (20675 parám.)
+2026-11-18 22:51:37 | lstm u64_d0.0  pliegue_2020  val=5.2212  época óptima=  4/ 14  22.3s  (20675 parám.)
+2026-11-18 22:51:51 | lstm u64_d0.0  pliegue_2021  val=0.6157  época óptima=  1/ 11  14.5s  (20675 parám.)
+2026-11-18 22:52:11 | lstm u64_d0.2  pliegue_2018  val=0.4336  época óptima=  2/ 12  20.2s  (20675 parám.)
+2026-11-18 22:52:30 | lstm u64_d0.2  pliegue_2019  val=1.7214  época óptima=  3/ 13  18.7s  (20675 parám.)
+2026-11-18 22:52:52 | lstm u64_d0.2  pliegue_2020  val=5.2458  época óptima=  9/ 19  22.0s  (20675 parám.)
+2026-11-18 22:53:03 | lstm u64_d0.2  pliegue_2021  val=0.6354  época óptima=  1/ 11  11.5s  (20675 parám.)
+2026-11-18 22:53:27 | gru  u32_d0.0  pliegue_2018  val=0.4730  época óptima=  4/ 14  23.9s  (4707 parám.)
+2026-11-18 22:54:09 | gru  u32_d0.0  pliegue_2019  val=1.3570  época óptima= 11/ 21  41.1s  (4707 parám.)
+2026-11-18 22:55:15 | gru  u32_d0.0  pliegue_2020  val=4.4782  época óptima= 15/ 25  66.1s  (4707 parám.)
+2026-11-18 22:56:24 | gru  u32_d0.0  pliegue_2021  val=0.7151  época óptima=  5/ 15  69.6s  (4707 parám.)
+2026-11-18 22:56:48 | gru  u32_d0.2  pliegue_2018  val=0.4967  época óptima=  2/ 12  23.6s  (4707 parám.)
+2026-11-18 22:57:36 | gru  u32_d0.2  pliegue_2019  val=1.4304  época óptima= 15/ 25  48.3s  (4707 parám.)
+2026-11-18 22:58:43 | gru  u32_d0.2  pliegue_2020  val=4.6566  época óptima= 15/ 25  66.4s  (4707 parám.)
+2026-11-18 22:59:24 | gru  u32_d0.2  pliegue_2021  val=0.7309  época óptima=  5/ 15  41.0s  (4707 parám.)
+2026-11-18 22:59:59 | gru  u64_d0.0  pliegue_2018  val=0.4448  época óptima=  2/ 12  35.2s  (15555 parám.)
+2026-11-18 23:00:46 | gru  u64_d0.0  pliegue_2019  val=1.4054  época óptima=  5/ 15  47.5s  (15555 parám.)
+2026-11-18 23:01:52 | gru  u64_d0.0  pliegue_2020  val=4.6518  época óptima=  9/ 19  65.3s  (15555 parám.)
+2026-11-18 23:03:01 | gru  u64_d0.0  pliegue_2021  val=0.8093  época óptima=  2/ 12  69.4s  (15555 parám.)
+2026-11-18 23:04:01 | gru  u64_d0.2  pliegue_2018  val=0.4343  época óptima=  2/ 12  59.7s  (15555 parám.)
+2026-11-18 23:05:12 | gru  u64_d0.2  pliegue_2019  val=1.5023  época óptima=  5/ 15  70.3s  (15555 parám.)
+2026-11-18 23:06:15 | gru  u64_d0.2  pliegue_2020  val=4.8776  época óptima=  4/ 14  63.0s  (15555 parám.)
+2026-11-18 23:07:27 | gru  u64_d0.2  pliegue_2021  val=0.7880  época óptima=  4/ 14  72.0s  (15555 parám.)
+2026-11-18 23:07:27 | Ajuste terminado en 199.9 min
+2026-11-18 23:07:27 | Resumen del ajuste:
+ red   config  perdida_val_media  perdida_val_desv  epoca_mediana     segundos  n_parametros
+ gru u32_d0.0           1.755818          1.852832            8.0   200.661264          4707
+ gru u32_d0.2           1.828679          1.926562           10.0   179.313124          4707
+ gru u64_d0.0           1.827830          1.923819            3.5   217.489644         15555
+ gru u64_d0.2           1.900548          2.033807            4.0   264.998444         15555
+lstm u32_d0.0           1.960033          2.058728            7.5 10341.569799          6243
+lstm u32_d0.2           1.923098          2.102099            7.0    74.732584          6243
+lstm u64_d0.0           1.989823          2.226944            2.5    72.360493         20675
+lstm u64_d0.2           2.009073          2.230692            2.5    72.372875         20675
+ rnn u32_d0.0           1.852081          2.030246            8.0   104.539979          1635
+ rnn u32_d0.2           1.802056          2.057930           12.0   122.174022          1635
+ rnn u64_d0.0           1.933190          2.100629            4.5   174.926587          5315
+ rnn u64_d0.2           1.911516          2.066916            5.0   162.912201          5315
+2026-11-18 23:08:02 | FINAL gru  u32_d0.0 semilla=42 épocas=8  train=0.5278  30.8s
+2026-11-18 23:08:32 | FINAL gru  u32_d0.0 semilla=7 épocas=8  train=0.5183  30.3s
+2026-11-18 23:09:13 | FINAL gru  u32_d0.0 semilla=2026 épocas=8  train=0.5074  40.9s
+2026-11-18 23:09:23 | FINAL lstm u32_d0.2 semilla=42 épocas=7  train=0.5029  9.8s
+2026-11-18 23:09:36 | FINAL lstm u32_d0.2 semilla=7 épocas=7  train=0.4963  13.6s
+2026-11-18 23:09:49 | FINAL lstm u32_d0.2 semilla=2026 épocas=7  train=0.5099  13.0s
+2026-11-18 23:10:25 | FINAL rnn  u32_d0.2 semilla=42 épocas=12  train=0.6343  35.3s
+2026-11-18 23:10:50 | FINAL rnn  u32_d0.2 semilla=7 épocas=12  train=0.6457  25.7s
+2026-11-18 23:11:10 | FINAL rnn  u32_d0.2 semilla=2026 épocas=12  train=0.6497  20.0s
+2026-11-18 23:11:10 | Mejores configuraciones:
+        config  perdida_val_media  epoca_mediana  n_parametros
+red                                                           
+gru   u32_d0.0           1.755818            8.0          4707
+lstm  u32_d0.2           1.923098            7.0          6243
+rnn   u32_d0.2           1.802056           12.0          1635
+2026-11-18 23:11:10 | Entrenamiento completo en 203.6 min

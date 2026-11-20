@@ -1,0 +1,50 @@
+{
+  "red": "lstm",
+  "config": "u32_d0.2",
+  "units": 32,
+  "dropout": 0.2,
+  "epocas_finales": 7,
+  "epocas_optimas_pliegues": [
+    3,
+    5,
+    15,
+    9
+  ],
+  "semillas": [
+    42,
+    7,
+    2026
+  ],
+  "n_parametros": 6243,
+  "perdida_val_media": 1.9230980649590492,
+  "segundos_ajuste": 300.98036949999516,
+  "segundos_final": 36.33654329998535,
+  "columnas_entrada": [
+    "r_brent",
+    "r_wti",
+    "r_wti_fut_Close",
+    "r_gas_natural",
+    "r_cobre",
+    "r_oro",
+    "r_indice_dolar",
+    "r_usd_por_eur",
+    "r_cny_por_usd",
+    "ln_vix",
+    "tipo_bce",
+    "d_tipo_bce",
+    "vol20_brent",
+    "dist_mm252"
+  ],
+  "horizontes": [
+    5,
+    63,
+    252
+  ],
+  "ventana": 60,
+  "train_inicio": "2001-07-12",
+  "train_fin": "2021-12-31",
+  "test_inicio": "2023-01-03",
+  "n_train": 4968,
+  "rapido": false,
+  "nota_tiempo": "Tiempo corregido: la ejecución u32_d0.0/pliegue_2020 registró 10275.7 s por una suspensión del PC; repetida dio el mismo resultado en 15.6 s."
+}

@@ -1,0 +1,49 @@
+{
+  "red": "rnn",
+  "config": "u32_d0.2",
+  "units": 32,
+  "dropout": 0.2,
+  "epocas_finales": 12,
+  "epocas_optimas_pliegues": [
+    3,
+    21,
+    25,
+    3
+  ],
+  "semillas": [
+    42,
+    7,
+    2026
+  ],
+  "n_parametros": 1635,
+  "perdida_val_media": 1.8020555302500725,
+  "segundos_ajuste": 564.5527882000024,
+  "segundos_final": 80.99048050001147,
+  "columnas_entrada": [
+    "r_brent",
+    "r_wti",
+    "r_wti_fut_Close",
+    "r_gas_natural",
+    "r_cobre",
+    "r_oro",
+    "r_indice_dolar",
+    "r_usd_por_eur",
+    "r_cny_por_usd",
+    "ln_vix",
+    "tipo_bce",
+    "d_tipo_bce",
+    "vol20_brent",
+    "dist_mm252"
+  ],
+  "horizontes": [
+    5,
+    63,
+    252
+  ],
+  "ventana": 60,
+  "train_inicio": "2001-07-12",
+  "train_fin": "2021-12-31",
+  "test_inicio": "2023-01-03",
+  "n_train": 4968,
+  "rapido": false
+}
