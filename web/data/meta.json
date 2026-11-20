@@ -1,0 +1,1 @@
+{"fecha_ultimo_dato":"2026-11-17","precio_ultimo":92.94,"fecha_entrenamiento":"2026-11-20T11:14:35+00:00","fecha_generacion":"2026-11-20T11:19:07+00:00","modelo":"RNN (32 unidades, dropout 0.2, 12 épocas, media de 3 semillas)","repo":"AlvaroGlezFdez/oil_price_prediction","url_actions":"https://github.com/AlvaroGlezFdez/oil_price_prediction/actions"}
