@@ -6,7 +6,8 @@ Se predice el precio del Brent a **5, 63 y 252 días hábiles** (≈ 1 semana, 3
 **rango de incertidumbre del 80 %**, y se compara una RNN simple, una LSTM y una GRU en igualdad de
 condiciones frente al modelo ingenuo (el precio futuro es igual al de hoy).
 
-**Web de la herramienta:** https://alvaroglezfdez.github.io/oil_price_prediction/
+**Web de la herramienta:** https://alvaroglezfdez.github.io/oil_price_prediction/  
+**Modelos en Hugging Face:** https://huggingface.co/AlvaroGlez/brent-rnn-lstm-gru
 
 ---
 
