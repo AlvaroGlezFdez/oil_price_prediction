@@ -1,0 +1,82 @@
+{
+  "fecha_datos": "2026-11-17",
+  "precio_actual": 92.94,
+  "modelo": "RNN (32 unidades, dropout 0.2, 12 épocas, media de 3 semillas)",
+  "fecha_entrenamiento": "2026-11-20T11:14:35+00:00",
+  "fecha_generacion": "2026-11-20T11:14:51+00:00",
+  "nivel_intervalo": 0.8,
+  "horizontes": [
+    {
+      "h": 5,
+      "etiqueta": "corto plazo (5 días hábiles, ~1 semana)",
+      "fecha_objetivo_aprox": "2026-11-24",
+      "log_rentabilidad_prevista": -0.00633766225515513,
+      "precio_previsto": 92.35284024543145,
+      "variacion_pct": -0.6317621632973472,
+      "intervalo_80": [
+        87.0766004446207,
+        98.10886992119437
+      ],
+      "precio_previsto_por_semilla": [
+        93.19056296605015,
+        92.1553851680486,
+        91.71874746346165
+      ],
+      "ingenuo": {
+        "precio_previsto": 92.94,
+        "intervalo_80": [
+          87.10619908384034,
+          98.59601514553891
+        ]
+      }
+    },
+    {
+      "h": 63,
+      "etiqueta": "medio plazo (63 días hábiles, ~3 meses)",
+      "fecha_objetivo_aprox": "2027-02-12",
+      "log_rentabilidad_prevista": -0.025909149030746825,
+      "precio_previsto": 90.56293058452187,
+      "variacion_pct": -2.5576387082829046,
+      "intervalo_80": [
+        70.28356019658864,
+        121.64936285019999
+      ],
+      "precio_previsto_por_semilla": [
+        100.88481602818129,
+        87.8082992534394,
+        83.84748321487156
+      ],
+      "ingenuo": {
+        "precio_previsto": 92.94,
+        "intervalo_80": [
+          72.62165583653838,
+          126.1992968778086
+        ]
+      }
+    },
+    {
+      "h": 252,
+      "etiqueta": "largo plazo (252 días hábiles, ~1 año)",
+      "fecha_objetivo_aprox": "2027-11-04",
+      "log_rentabilidad_prevista": -0.008404866774351158,
+      "precio_previsto": 92.1621252281041,
+      "variacion_pct": -0.8369644629824613,
+      "intervalo_80": [
+        70.7269563909021,
+        150.7202907714605
+      ],
+      "precio_previsto_por_semilla": [
+        117.6012446882374,
+        84.68599340804143,
+        78.60206176949964
+      ],
+      "ingenuo": {
+        "precio_previsto": 92.94,
+        "intervalo_80": [
+          60.82451662675918,
+          175.2021685645759
+        ]
+      }
+    }
+  ]
+}

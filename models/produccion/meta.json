@@ -1,0 +1,44 @@
+{
+  "red": "rnn",
+  "units": 32,
+  "dropout": 0.2,
+  "epocas": 12,
+  "semillas": [
+    42,
+    7,
+    2026
+  ],
+  "columnas_entrada": [
+    "r_brent",
+    "r_wti",
+    "r_wti_fut_Close",
+    "r_gas_natural",
+    "r_cobre",
+    "r_oro",
+    "r_indice_dolar",
+    "r_usd_por_eur",
+    "r_cny_por_usd",
+    "ln_vix",
+    "tipo_bce",
+    "d_tipo_bce",
+    "vol20_brent",
+    "dist_mm252"
+  ],
+  "horizontes": [
+    5,
+    63,
+    252
+  ],
+  "ventana": 60,
+  "train_inicio": "2001-07-12",
+  "train_fin": "2026-11-10",
+  "n_train": 6196,
+  "n_etiquetas_por_horizonte": {
+    "y_5": 6196,
+    "y_63": 6138,
+    "y_252": 5949
+  },
+  "fecha_datos": "2026-11-17",
+  "fecha_entrenamiento": "2026-11-20T11:14:35+00:00",
+  "segundos_entrenamiento": 63.27341409998189
+}
