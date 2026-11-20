@@ -53,12 +53,16 @@ CICLOS = [
     {
         "id": "2025", "titulo": "Movimientos recientes 2025-2026",
         "inicio": "2025-01-01", "fin": None,   # hasta el último dato
-        "texto": ("Según los datos: el Brent bajó durante 2025 hasta {min} $ ({f_min}). En 2026 hubo dos "
-                  "picos: {max} $ el {f_max} (desde unos 61 $ en enero) y {max2} $ el {f_max2}, con una "
-                  "caída intermedia hasta unos 70 $ en junio. Último dato: {ultimo} $ ({f_ultimo})."),
-        # TODO (Álvaro): completar las causas de los picos de 2026; no se describen aquí para no
-        # atribuir causas no verificadas.
-        "todo": "Causas de los picos de 2026 pendientes de completar.",
+        "texto": ("El Brent bajó durante 2025 hasta {min} $ ({f_min}). En 2026 hubo dos picos. "
+                  "Abril ({max} $ el {f_max}, desde unos 61 $ en enero): conflicto entre EE. UU. e Irán y "
+                  "cierre del estrecho de Ormuz; el Brent físico llegó a cotizar más de 25 $ por encima del "
+                  "futuro por la escasez inmediata de suministro. Octubre ({max2} $ el {f_max2}): nuevas "
+                  "tensiones en Oriente Medio (ataques de los hutíes contra Arabia Saudí y despliegue militar "
+                  "de EE. UU. en la zona) y ataques entre Rusia y Ucrania a infraestructuras energéticas. "
+                  "Entre ambos picos el precio cayó hasta unos 70 $ en junio. Último dato: {ultimo} $ "
+                  "({f_ultimo})."),
+        "fuentes": ("EIA (Today in Energy, abril de 2026), Euronews (30-04-2026), "
+                    "World Oil (16-10-2026)."),
     },
 ]
 
@@ -103,7 +107,7 @@ def construir_ciclos(brent: pd.Series, wti_raw: pd.Series) -> list[dict]:
         salida.append({"id": c["id"], "titulo": c["titulo"], "inicio": c["inicio"], "fin": fin,
                        # coma decimal (las fechas usan guiones, no se ven afectadas)
                        "texto": c["texto"].format(**{k: v.replace(".", ",") for k, v in valores.items()}), "extremos": extremos,
-                       "todo": c.get("todo")})
+                       "todo": c.get("todo"), "fuentes": c.get("fuentes")})
     return salida
 
 
